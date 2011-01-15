@@ -7,7 +7,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     var parts;
     
     function onEdit(evt) {
-        alert("edit");
+        $(parts['section-edit']).toggle('3s');
     }
 
     function onReady() {
@@ -26,10 +26,11 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
 
     function getDoc() {
         return {
-            "blob": {
+            blob: {
                 version: 1,
                 markdown: $('#section-edit').val()
-            }
+            },
+            readers: ['public']
         };
     }
 

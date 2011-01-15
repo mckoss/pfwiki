@@ -58,6 +58,7 @@ textarea {
     font-size: inherit;
     width: 100%;
     height: 800px;
+    display: none;
 }
 
 .footer {
