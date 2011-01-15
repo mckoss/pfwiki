@@ -1,0 +1,27 @@
+{
+  "application": "wiki",
+  "cloneable": true,
+  "created": {
+    "__class__": "Date",
+    "isoformat": "2011-01-15T19:59:46.896488Z"
+  },
+  "icon": "images/icon.png",
+  "modified": {
+    "__class__": "Date",
+    "isoformat": "2011-01-15T19:59:47.422037Z"
+  },
+  "owner": "mckoss",
+  "readers": [
+    "public"
+  ],
+  "referers": [],
+  "sha1": "9f1e762e467ac2ceaf470e5287c005312ed23ba4",
+  "size": 271,
+  "tags": [
+    "demo",
+    "sample"
+  ],
+  "title": "Pageforest Sample Application",
+  "url": "http://scratch.pageforest.com/",
+  "writers": []
+}
