@@ -1,12 +1,20 @@
 // Wiki - A simple wiki base on Pageforest.
 namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
-    var client;
-    var markdown;
+    var dom = namespace.lookup('org.startpad.dom');
+    var client = new namespace.com.pageforest.client.Client(ns);
+    var markdown = new Showdown.converter();
+    
+    var parts;
+    
+    function onEdit(evt) {
+        alert("edit");
+    }
 
     function onReady() {
-        client = new namespace.com.pageforest.client.Client(ns);
-        markdown = new Showdown.converter();
+        parts = dom.bindIDs();
         client.addAppBar();
+
+        $(parts.edit).click(onEdit);
     }
 
     function setDoc(json) {
