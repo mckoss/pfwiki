@@ -1,25 +1,12 @@
 body {
     margin: padding: 0;
     font-family: Helvetica, sans-serif;
-    font-size: 24px;
+    font-size: 18px;
     background: #ebebeb url("/images/gradient.jpg") repeat-x left top;
 }
 
-h1 {
-    margin: 5px 0 0 0;
-}
-
-h2 {
-    text-align:center;
-    margin: 0 0 5px 0;
-}
-
 hr {
-    border: 2px solid black;
-}
-
-img {
-    border: 0;
+    border: 1px solid black;
 }
 
 div {
@@ -31,59 +18,13 @@ p {
     margin: 0 0 5px 0;
 }
 
-ol li {
-    font-size: 20px;
-    margin-bottom: 8px;
-}
-
 div.page {
     width: 980px;
     margin: auto;
 }
 
-label {
-    font-size: 24px;
-    font-weight: bold;
-    display: inline-block;
-    width: 100px;
-    vertical-align: top;
-}
-
-fieldset {
-    margin-bottom: 15px;
-    clear: both;
-}
-
-fieldset p {
-    font-size: 20px;
-    font-style: italic;
-}
-
-fieldset ul {
-    margin: 0;
-    padding: 0;
-}
-
-fieldset ul li {
-    list-style: none;
-    padding: 5px;
-    margin: 0 0 5px 0;
-}
-
-input[type="text"] {
-    font-size: 24px;
-    width: 800px;
-}
-
 textarea {
     font-family: Helvetica, sans-serif;
-    width: 800px;
-    height: 100px;
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-input[type="button"] {
-    font-size: 24px;
-    margin: 5px;
+    font-size: 18px;
+    width: 100%;
 }

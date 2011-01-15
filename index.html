@@ -10,6 +10,7 @@
         src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
 <script type="text/javascript" src="/lib/beta/js/json2.min.js"></script>
 <script type="text/javascript" src="/lib/beta/js/utils.js"></script>
+<script type="text/javascript" src="/scripts/showdown.js"></script>
 <script type="text/javascript" src="/scripts/main.js"></script>
 
 <script type="text/javascript">
@@ -19,21 +20,17 @@
 </head>
 
 <body>
+  <div class="page">
+    <h1 id='title'><script>document.write(document.title);</script></h1>
+    <hr/>
+    <div id="section">Sample Text</div>
+    <textarea id="section-edit"></textarea>
 
-<div class="page">
-  <h1><script>document.write(document.title);</script></h1>
 
-  <fieldset>
-    <legend>Page</legend>
-    <div id="home">Sample Text</div>
-  </fieldset>
 
-<!--
-   Standard Google Analytics tracking.  This can be removed from your own app,
-   or replaced with your own account id.
-  -->
-
-<script type="text/javascript">
+  </div> <!-- page -->
+  
+  <script type="text/javascript">
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-2072869-7']);
   _gaq.push(['_trackPageview']);
@@ -41,12 +38,9 @@
   (function() {
     var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
     ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') +
-        '.google-analytics.com/ga.js';
+    '.google-analytics.com/ga.js';
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-</script>
-
-</div> <!-- page -->
-
+    })();
+  </script>
 </body>
 </html>

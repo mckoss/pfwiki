@@ -8,20 +8,20 @@
   "icon": "images/icon.png",
   "modified": {
     "__class__": "Date",
-    "isoformat": "2011-01-15T19:59:47.422037Z"
+    "isoformat": "2011-01-15T21:25:14.435399Z"
   },
   "owner": "mckoss",
   "readers": [
     "public"
   ],
   "referers": [],
-  "sha1": "9f1e762e467ac2ceaf470e5287c005312ed23ba4",
-  "size": 271,
+  "sha1": "7d343a22f5e767456686495c21f7dac77928c43b",
+  "size": 257,
   "tags": [
     "demo",
     "sample"
   ],
-  "title": "Pageforest Sample Application",
-  "url": "http://scratch.pageforest.com/",
+  "title": "Pageforest Wiki",
+  "url": "http://wiki.pageforest.com/",
   "writers": []
 }
