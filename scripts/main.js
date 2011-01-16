@@ -20,6 +20,10 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     function setDoc(json) {
         $('#section').html(markdown.makeHtml(json.blob.markdown));
         $('#section-edit').val(json.blob.markdown);
+        updateMeta(json);
+    }
+    
+    function updateMeta(json) {
         document.title = json.title;
         $('#title').text(json.title);
     }
@@ -33,10 +37,16 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
             readers: ['public']
         };
     }
+    
+    function onSaveSuccess(json) {
+        updateMeta(client.meta);
+    }
 
     ns.extend({
         'onReady': onReady,
         'getDoc': getDoc,
-        'setDoc': setDoc
+        'setDoc': setDoc,
+        'onSaveSuccess': onSaveSuccess
+        
     });
 });
