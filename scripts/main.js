@@ -5,28 +5,48 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     var client = new namespace.com.pageforest.client.Client(ns);
     var markdown = new Showdown.converter();
 
-    var parts;
+    var page;
     var lastMarkdown = "";
     var syncTime = 5;
+    var editVisible = false;
+    var maxHeight = 1024;
     
-    function onEdit(evt) {
-        $(parts['section-edit']).toggle('3s');
+    function resizeEdit() {
+        if (editVisible) {
+            var targetHeight = Math.min(maxHeight, page.editor.scrollHeight - 4);
+            if ($(page.editor).height() < targetHeight) {
+                console.log("Growing to " + targetHeight);
+                $(page.editor).height(targetHeight);
+            }
+        }
     }
 
+    function onEdit(evt) {
+        editVisible = !editVisible;
+        if (editVisible) {
+            $(page.editor).show();
+            resizeEdit();
+        } else {
+            $(page.editor).height(50).hide();
+        }
+        $(page.edit).text(editVisible ? 'hide' : 'edit');
+    }
+    
     function onEditChange() {
-        if (parts['section-edit'].value == lastMarkdown) {
+        if (page.editor.value == lastMarkdown) {
             return;
         }
-        lastMarkdown = parts['section-edit'].value;
-        parts.section.innerHTML = markdown.makeHtml(lastMarkdown);
+        resizeEdit();
+        lastMarkdown = page.editor.value;
+        page.section.innerHTML = markdown.makeHtml(lastMarkdown);
     }
     
     function onReady() {
-        parts = dom.bindIDs();
+        page = dom.bindIDs();
         client.addAppBar();
 
-        $(parts.edit).click(onEdit);
-        $(parts['section-edit']).keydown(onEditChange);
+        $(page.edit).click(onEdit);
+        $(page.editor).bind('keydown', function() {console.log('keydown'); onEditChange();});
         
         setInterval(onEditChange, syncTime * 1000);
     }
@@ -37,7 +57,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     }
 
     function setDoc(json) {
-        parts['section-edit'].value = json.blob.markdown;
+        page.editor.value = json.blob.markdown;
         onEditChange();
         updateMeta(json);
     }
@@ -46,7 +66,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
         return {
             blob: {
                 version: 1,
-                markdown: parts['section-edit'].value
+                markdown: page.editor.value
             },
             readers: ['public']
         };
