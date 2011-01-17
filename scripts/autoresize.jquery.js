@@ -45,7 +45,7 @@
                     return textarea.clone().removeAttr('id').removeAttr('name').css({
                         position: 'absolute',
                         top: 0,
-                        left: 0 /*-9999*/
+                        left: -9999
                     }).css(propOb).attr('tabIndex','-1').insertBefore(textarea);
 
                 })(),

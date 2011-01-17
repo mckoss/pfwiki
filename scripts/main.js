@@ -13,17 +13,17 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
 
     function onEditChange() {
         var newText = page.editor.value;
-        console.log("'" + newText + "'");
         if (newText == lastMarkdown) {
             return;
         }
-        lastMarkdown = page.editor.value;
-        page.section.innerHTML = markdown.makeHtml(lastMarkdown);
+        lastMarkdown = newText;
+        page.section.innerHTML = markdown.makeHtml(newText);
     }
 
     function toggleEditor(evt) {
         editVisible = !editVisible;
         if (editVisible) {
+            $(page.editor).show();
             // Binding this in the onReady function does not work
             // since the original textarea is hidden.
             if (!editorInitialized) {
@@ -32,7 +32,6 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
                     .bind('keyup', onEditChange)
                     .autoResize();
             }
-            $(page.editor).show();
         } else {
             $(page.editor).hide();
         }
