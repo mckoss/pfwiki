@@ -11,7 +11,8 @@ div {
 }
 
 p {
-    margin: 0 0 5px 0;
+    margin: 0 0 8px 0;
+    line-height: 140%;
 }
 
 a {
@@ -24,6 +25,11 @@ a:visited {
 
 a:hover {
     color: #000;
+}
+
+li {
+    line-height: 120%;
+    margin-bottom: 8px;
 }
 
 div.page {
