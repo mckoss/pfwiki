@@ -82,7 +82,8 @@
                 .unbind('.dynSiz')
                 .bind('keyup.dynSiz', updateSize)
                 .bind('keydown.dynSiz', updateSize)
-                .bind('change.dynSiz', updateSize);
+                .bind('change.dynSiz', updateSize)
+                .trigger('change.dynSiz');
 
         });
 

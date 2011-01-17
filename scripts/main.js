@@ -23,7 +23,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     function toggleEditor(evt) {
         editVisible = !editVisible;
         if (editVisible) {
-            $(page.editor).show();
+            $(page.editBlock).show();
             // Binding this in the onReady function does not work
             // since the original textarea is hidden.
             if (!editorInitialized) {
@@ -33,7 +33,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
                     .autoResize();
             }
         } else {
-            $(page.editor).hide();
+            $(page.editBlock).hide();
         }
         $(page.edit).text(editVisible ? 'hide' : 'edit');
     }

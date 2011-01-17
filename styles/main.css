@@ -53,11 +53,14 @@ span.menu-bar {
     color: #000;
 }
 
+#editBlock {
+    display: none;
+}
+
 textarea {
     font-family: "Courier New", Courier, monospace;
     font-size: inherit;
     width: 100%;
-    display: none;
 }
 
 .footer {
