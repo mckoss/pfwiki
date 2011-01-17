@@ -30,7 +30,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
                 editorInitialized = true;
                 $(page.editor)
                     .bind('keyup', onEditChange)
-                    .autoResize({limit:500});
+                    .autoResize({limit: (screen.height - 100) / 2});
             }
         } else {
             $(page.editBlock).hide();
