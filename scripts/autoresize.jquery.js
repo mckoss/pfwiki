@@ -59,15 +59,16 @@
                     var scrollTop = Math.max(clone.scrollTop(), origHeight) + settings.extraSpace,
                         toChange = $(this).add(clone);
 
-                    // Don't do anything if scrollTip hasen't changed:
-                    if (lastScrollTop === scrollTop) { return; }
-                    lastScrollTop = scrollTop;
-
                     // Check for limit:
                     if ( scrollTop >= settings.limit ) {
                         $(this).css('overflow-y','');
-                        return;
+                        scrollTop = settings.limit;
                     }
+
+                    // Don't do anything if scrollTop hasen't changed:
+                    if (lastScrollTop === scrollTop) { return; }
+                    lastScrollTop = scrollTop;
+
                     // Fire off callback:
                     settings.onResize.call(this);
 
