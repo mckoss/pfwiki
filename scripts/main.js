@@ -9,45 +9,42 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     var lastMarkdown = "";
     var syncTime = 5;
     var editVisible = false;
-    var maxHeight = 1024;
-    
-    function resizeEdit() {
-        if (editVisible) {
-            var targetHeight = Math.min(maxHeight, page.editor.scrollHeight - 4);
-            if ($(page.editor).height() < targetHeight) {
-                console.log("Growing to " + targetHeight);
-                $(page.editor).height(targetHeight);
-            }
-        }
-    }
+    var editorInitialized = false;
 
-    function onEdit(evt) {
-        editVisible = !editVisible;
-        if (editVisible) {
-            $(page.editor).show();
-            resizeEdit();
-        } else {
-            $(page.editor).height(50).hide();
-        }
-        $(page.edit).text(editVisible ? 'hide' : 'edit');
-    }
-    
     function onEditChange() {
-        if (page.editor.value == lastMarkdown) {
+        var newText = page.editor.value;
+        console.log("'" + newText + "'");
+        if (newText == lastMarkdown) {
             return;
         }
-        resizeEdit();
         lastMarkdown = page.editor.value;
         page.section.innerHTML = markdown.makeHtml(lastMarkdown);
     }
-    
+
+    function toggleEditor(evt) {
+        editVisible = !editVisible;
+        if (editVisible) {
+            // Binding this in the onReady function does not work
+            // since the original textarea is hidden.
+            if (!editorInitialized) {
+                editorInitialized = true;
+                $(page.editor)
+                    .bind('keyup', onEditChange)
+                    .autoResize();
+            }
+            $(page.editor).show();
+        } else {
+            $(page.editor).hide();
+        }
+        $(page.edit).text(editVisible ? 'hide' : 'edit');
+    }
+
     function onReady() {
         page = dom.bindIDs();
         client.addAppBar();
 
-        $(page.edit).click(onEdit);
-        $(page.editor).bind('keydown', function() {console.log('keydown'); onEditChange();});
-        
+        $(page.edit).click(toggleEditor);
+
         setInterval(onEditChange, syncTime * 1000);
     }
 
@@ -56,12 +53,16 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
         $('#title').text(json.title);
     }
 
+    function onSaveSuccess(json) {
+        updateMeta(client.meta);
+    }
+
     function setDoc(json) {
         page.editor.value = json.blob.markdown;
         onEditChange();
         updateMeta(json);
     }
-    
+
     function getDoc() {
         return {
             blob: {
@@ -71,16 +72,11 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
             readers: ['public']
         };
     }
-    
-    function onSaveSuccess(json) {
-        updateMeta(client.meta);
-    }
 
     ns.extend({
         'onReady': onReady,
         'getDoc': getDoc,
         'setDoc': setDoc,
         'onSaveSuccess': onSaveSuccess
-        
     });
 });
