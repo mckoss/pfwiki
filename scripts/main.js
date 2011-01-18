@@ -17,7 +17,9 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
             return;
         }
         lastMarkdown = newText;
-        page.section.innerHTML = markdown.makeHtml(newText);
+        try {
+            page.section.innerHTML = markdown.makeHtml(newText);
+        } catch (e) {}
     }
 
     function toggleEditor(evt) {
