@@ -16,6 +16,17 @@ p {
     line-height: 140%;
 }
 
+pre {
+    border: 2px solid gray;
+    display: block;
+    background-color: #F5F5DC;
+    padding: 5px 10px;
+}
+
+code {
+    font-family: "Courier New", Courier, monospace;
+}
+
 a {
     color: #444;
 }
