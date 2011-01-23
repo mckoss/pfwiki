@@ -174,9 +174,8 @@ def save_options():
     Save options in options file for later use.
     """
     file_options = {}
-    file_options['username'] = options.username
-    file_options['secret'] = options.secret
-    file_options['server'] = options.server
+    for prop in ['username', 'secret', 'server']:
+        file_options[prop] = getattr(options, prop)
 
     open(OPTIONS_FILENAME, 'w').write(to_json(file_options))
 
