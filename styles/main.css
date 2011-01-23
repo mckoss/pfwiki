@@ -44,6 +44,27 @@ li {
     margin-bottom: 8px;
 }
 
+table {
+	border-collapse: collapse;
+	border: 1px solid #36362E;
+	margin: 0 0 8px 0;
+}
+
+th {
+    border: 1px solid #36362E;
+	padding: 5px;
+	text-style: bold;
+    color: white;
+	background-color: #69695A;
+	text-align: center;
+}
+
+td {
+    border: 1px solid #36362E;
+	padding: 5px;
+	background-color: #F5F5DC;
+}
+
 div.page {
     width: 900px;
     margin: auto;
