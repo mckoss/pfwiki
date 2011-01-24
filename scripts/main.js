@@ -37,7 +37,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
         } else {
             $(page.editBlock).hide();
         }
-        $(page.edit).text(editVisible ? 'hide' : 'edit');
+        $(page.edit).val(editVisible ? 'hide' : 'edit');
     }
 
     function onReady() {

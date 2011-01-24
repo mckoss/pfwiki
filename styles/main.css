@@ -87,11 +87,6 @@ span.menu-bar {
     text-align: right;
 }
 
-.menu:hover {
-    cursor: pointer;
-    color: #000;
-}
-
 #editBlock {
     display: none;
 }
