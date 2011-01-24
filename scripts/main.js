@@ -2,7 +2,7 @@
 /*globals Showdown */
 namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     var dom = namespace.lookup('org.startpad.dom');
-    var client = new namespace.com.pageforest.client.Client(ns);
+    var client;
     var markdown = new Showdown.converter();
 
     var page;
@@ -42,6 +42,8 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
 
     function onReady() {
         page = dom.bindIDs();
+        client = new namespace.com.pageforest.client.Client(ns);
+
         client.addAppBar();
 
         $(page.edit).click(toggleEditor);
