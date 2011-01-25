@@ -2,6 +2,7 @@
 /*globals Showdown */
 namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     var dom = namespace.lookup('org.startpad.dom');
+    var nsdoc = namespace.lookup('org.startpad.nsdoc');
     var client;
     var markdown = new Showdown.converter();
 
@@ -19,6 +20,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
         lastMarkdown = newText;
         try {
             page.section.innerHTML = markdown.makeHtml(newText);
+            nsdoc.updateScriptSections(page.section);
         } catch (e) {}
     }
 

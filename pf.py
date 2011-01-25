@@ -121,9 +121,11 @@ def load_application():
 
     if options.command == 'test':
         options.application = 'pfpytest'
+        options.save_app = False
 
     if options.command == 'listapps':
         options.application = 'www'
+        options.save_app = False
         options.root_url = 'http://www.%s/' % options.server
 
     if options.application is None:
@@ -133,11 +135,14 @@ def load_application():
             parsed = {}
         if 'application' in parsed:
             options.application = parsed['application']
+            options.save_app = False
         else:
             options.application = raw_input("Application: ")
 
     if not hasattr(options, 'root_url'):
         options.root_url = 'http://%s.%s.%s/' % (ADMIN, options.application, options.server)
+
+    print "Server: %s" % options.root_url
 
 
 def load_options():
@@ -146,6 +151,7 @@ def load_options():
     provided options.
     """
     options.local_only = options.command == 'sha1'
+    options.save_app = True
 
     options.secret = None
     file_options = {}
@@ -173,9 +179,15 @@ def save_options():
     """
     Save options in options file for later use.
     """
+    if options.local_only:
+        return
+
     file_options = {}
     for prop in ['username', 'secret', 'server']:
         file_options[prop] = getattr(options, prop)
+
+    if options.save_app:
+        file_options['application'] = options.application
 
     open(OPTIONS_FILENAME, 'w').write(to_json(file_options))
 
@@ -610,52 +622,6 @@ def listapps_command(args):
     for app_name, app in apps.items():
         if app['owner'] != options.username:
             print "%s (by %s)" % (app_name, app['owner'])
-
-
-def test_command(args):
-    """
-    Test all commands against a live server.
-    """
-    # Create temp folder.
-    dirname = options.application
-    if not os.path.exists(dirname):
-        os.mkdir(dirname)
-    os.chdir(dirname)
-    # Create META_FILENAME with metadata.
-    outfile = open(META_FILENAME, 'w')
-    outfile.write('{"application": "%s"}' % options.application)
-    outfile.close()
-    # Create test.txt with current timestamp as content.
-    write_data = datetime.now().isoformat()
-    filename = 'test.txt'
-    outfile = open(filename, 'w')
-    outfile.write(write_data)
-    outfile.close()
-    # Show local SHA-1 hashes.
-    sha1_command(['test.txt'])
-    # Upload everything, then delete local files.
-    put_command([])
-    os.unlink(META_FILENAME)
-    os.unlink(filename)
-    # Show remote SHA-1 hashes.
-    list_command([])
-    # Download everything, then verify file content.
-    get_command([])
-    infile = open(filename, 'r')
-    read_data = infile.read()
-    infile.close()
-    assert read_data == write_data
-    # Verify META_FILENAME content.
-    infile = open(META_FILENAME, 'r')
-    app_json = infile.read()
-    infile.close()
-    assert '"modified":' in app_json
-    assert '"tags": []' in app_json
-    # Clean up.
-    os.unlink(META_FILENAME)
-    os.unlink(filename)
-    os.chdir('..')
-    os.rmdir(dirname)
 
 
 def main():
