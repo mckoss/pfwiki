@@ -42,7 +42,7 @@
     <script type="text/javascript">
         var disqus_shortname = 'wiki-pageforest';
 
-        var disqus_identifier = location.hash.slice(1);
+        var disqus_identifier = Location.hash.slice(1);
         var disqus_url = location.href;
         console.log("Disqus", disqus_identifier, disqus_url);
 
