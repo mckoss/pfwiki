@@ -6,51 +6,51 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     var client;
     var markdown = new Showdown.converter();
 
-    var page;
+    var doc;                            // Bound elements here
     var lastMarkdown = "";
     var syncTime = 5;
     var editVisible = false;
     var editorInitialized = false;
 
     function onEditChange() {
-        var newText = page.editor.value;
+        var newText = doc.editor.value;
         if (newText == lastMarkdown) {
             return;
         }
         client.setDirty();
         lastMarkdown = newText;
         try {
-            page.output.innerHTML = markdown.makeHtml(newText);
-            nsdoc.updateScriptSections(page.output);
+            doc.output.innerHTML = markdown.makeHtml(newText);
+            nsdoc.updateScriptSections(doc.output);
         } catch (e) {}
     }
 
     function toggleEditor(evt) {
         editVisible = !editVisible;
         if (editVisible) {
-            $(page.inputBlock).show();
+            $(doc.page).addClass('edit');
             // Binding this in the onReady function does not work
             // since the original textarea is hidden.
             if (!editorInitialized) {
                 editorInitialized = true;
-                $(page.editor)
+                $(doc.editor)
                     .bind('keyup', onEditChange)
                     .autoResize({limit: (screen.height - 100) / 2});
             }
         } else {
-            $(page.inputBlock).hide();
+            $(doc.page).removeClass('edit');
         }
-        $(page.edit).val(editVisible ? 'hide' : 'edit');
+        $(doc.edit).val(editVisible ? 'hide' : 'edit');
     }
 
     function onReady() {
-        page = dom.bindIDs();
+        doc = dom.bindIDs();
         client = new namespace.com.pageforest.client.Client(ns);
         client.saveInterval = 0;
 
         client.addAppBar();
 
-        $(page.edit).click(toggleEditor);
+        $(doc.edit).click(toggleEditor);
 
         setInterval(onEditChange, syncTime * 1000);
     }
@@ -65,7 +65,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     }
 
     function setDoc(json) {
-        page.editor.value = json.blob.markdown;
+        doc.editor.value = json.blob.markdown;
         onEditChange();
         updateMeta(json);
     }
@@ -74,7 +74,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
         return {
             blob: {
                 version: 1,
-                markdown: page.editor.value
+                markdown: doc.editor.value
             },
             readers: ['public']
         };

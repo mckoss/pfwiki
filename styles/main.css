@@ -6,6 +6,8 @@ body {
     background: #ebebeb url("/images/gradient.jpg") repeat-x left top;
 }
 
+#page:not(.edit) .if_edit { display: none; }
+
 div {
     padding:0;
     margin:0;
@@ -85,10 +87,6 @@ span.menu-bar {
     color: gray;
     font-size: 0.5em;
     text-align: right;
-}
-
-#inputBlock {
-    display: none;
 }
 
 textarea {
