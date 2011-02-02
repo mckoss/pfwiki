@@ -71,37 +71,41 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
         for (var i = 0; i < scripts.length; i++) {
             var script = scripts[i];
             var body = base.strip(script.innerHTML);
-            if (script.className == '') {
+            var lines = body.split('\n');
+            var comments = [];
+            var max = 0;
+            var jBegin = 0;
+            for (var j = 0; j < lines.length; j++) {
+                if (j != lines.length - 1 &&
+                    !/^\S.*;\s*$/.test(lines[j])) {
+                     comments[j] = '';
+                     continue;
+                }
+                var batch = lines.slice(jBegin, j + 1).join('\n');
+                batch = base.strip(batch);
                 try {
-                    eval(body);
-                } catch (e1) {
-                    body += '\n/* Exception: ' + e1.message + ' */';
-                }
-            } else if (script.className == 'eval-lines') {
-                var lines = body.split('\n');
-                var comments = [];
-                var max = 0;
-                for (var j = 0; j < lines.length; j++) {
-                    try {
-                        var value = eval(lines[j]);
-                        if (value == undefined) {
-                            comments[j] = '';
-                        } else {
-                            if (typeof value == 'string') {
-                                value = '"' + value + '"';
-                            }
-                            comments[j] = '// ' + value.toString();
+                    var value = eval(batch);
+                    if (value == undefined) {
+                        comments[j] = '';
+                    } else {
+                        if (typeof value == 'string') {
+                            value = '"' + value + '"';
                         }
-                    } catch (e2) {
-                        comments[j] = "// Exception: " + e2.message;
+                        comments[j] = '// ' + value.toString();
                     }
-                    max = Math.max(lines[j].length, max);
+                } catch (e2) {
+                    comments[j] = "// Exception: " + e2.message;
                 }
-                for (j = 0; j < lines.length; j++) {
+                max = Math.max(lines[j].length, max);
+                jBegin = j + 1;
+            }
+
+            for (j = 0; j < lines.length; j++) {
+                if (comments[j] != "") {
                     lines[j] += format.repeat(' ', max - lines[j].length + 2) + comments[j];
                 }
-                body = lines.join('\n');
             }
+            body = lines.join('\n');
             $(script).before('<pre><code>' + body + '</code></pre>');
         }
     }
