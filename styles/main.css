@@ -15,7 +15,7 @@ a:visited { color: #888; }
 a:hover { color: #000; }
 li { line-height: 120%; margin-bottom: 8px; }
 
-#page { width: 900px; margin: auto; }
+#page { width: 90%; margin: auto; }
 #page:not(.edit) .if_edit { display: none; }
 
 #page-heading {
@@ -35,8 +35,8 @@ span.menu-bar {
     text-align: right;
 }
 
-#inputBlock { width: 440px; float: right; }
-#page.edit #outputBlock { width: 440px; float: left; margin: 0; overflow: hidden}
+#inputBlock { width: 48%; float: right; }
+#page.edit #outputBlock { width: 48%; float: left; margin: 0; overflow: hidden}
 
 #output pre {
     border: 2px solid gray;
