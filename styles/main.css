@@ -45,6 +45,11 @@ span.menu-bar {
     padding: 5px 10px;
 }
 
+#output pre.printed {
+    color: white;
+    background-color: black;
+}
+
 #output table {
     border-collapse: collapse;
     border: 1px solid #36362E;

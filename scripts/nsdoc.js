@@ -67,9 +67,35 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
     function updateScriptSections(context) {
         var scripts = $('script', context);
         var e;
+        var printed;
+
+        // Improved version for format module
+        // Takes a dictionary or any number of positional arguments.
+        // {n} - positional arg
+        // {key} - dictionary arg (first match)
+        function replaceKeys(st) {
+            var args = arguments;
+            st = st.toString();
+            re = /{([^}]+)}/g;
+            st = st.replace(re, function(whole, key) {
+               var n = parseInt(key);
+               if (!isNaN(n)) {
+                   return args[n];
+               } else {
+                   return args[1][key];
+               }
+            });
+            return st;
+        }
+
+        function print() {
+            var s = replaceKeys.apply(undefined, arguments);
+            printed.push(s);
+        }
 
         for (var i = 0; i < scripts.length; i++) {
             var script = scripts[i];
+            printed = [];
             var body = base.strip(script.innerHTML);
             var lines = body.split('\n');
             var comments = [];
@@ -107,6 +133,9 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
             }
             body = lines.join('\n');
             $(script).before('<pre><code>' + body + '</code></pre>');
+            if (printed.length > 0) {
+                $(script).after('<pre class="printed"><code>' + printed.join('\n') + '</code></pre>');
+            }
         }
     }
 
