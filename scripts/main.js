@@ -35,7 +35,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
                 editorInitialized = true;
                 $(doc.editor)
                     .bind('keyup', onEditChange)
-                    .autoResize({limit: (screen.height - 100) / 2});
+                    .autoResize({limit: 10000});
             }
         } else {
             $(doc.page).removeClass('edit');

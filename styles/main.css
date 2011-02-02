@@ -6,44 +6,43 @@ body {
     background: #ebebeb url("/images/gradient.jpg") repeat-x left top;
 }
 
+div { padding:0; margin:0; }
+p { margin: 0 0 8px 0; line-height: 140%; }
+h1, h2, h3, h4, h5 { margin: 5px 0; }
+code { font-family: "Courier New", Courier, monospace; }
+a { color: #444; }
+a:visited { color: #888; }
+a:hover { color: #000; }
+li { line-height: 120%; margin-bottom: 8px; }
+
+#page { width: 900px; margin: auto; }
 #page:not(.edit) .if_edit { display: none; }
 
-div {
-    padding:0;
-    margin:0;
+#page-heading {
+    border-bottom: 2px solid black;
+    padding-bottom: 4px;
+    position: relative;
+    width: 100%;
 }
 
-p {
-    margin: 0 0 8px 0;
-    line-height: 140%;
+span.menu-bar {
+    position: absolute;
+    display: block;
+    bottom: 3px;
+    right: 0;
+    color: gray;
+    font-size: 0.5em;
+    text-align: right;
 }
+
+#inputBlock { width: 440px; float: right; }
+#page.edit #outputBlock { width: 440px; float: left; margin: 0; }
 
 #output pre {
     border: 2px solid gray;
     display: block;
     background-color: #F5F5DC;
     padding: 5px 10px;
-}
-
-code {
-    font-family: "Courier New", Courier, monospace;
-}
-
-a {
-    color: #444;
-}
-
-a:visited {
-    color: #888;
-}
-
-a:hover {
-    color: #000;
-}
-
-li {
-    line-height: 120%;
-    margin-bottom: 8px;
 }
 
 #output table {
@@ -67,28 +66,6 @@ li {
     background-color: #F5F5DC;
 }
 
-#page {
-    width: 900px;
-    margin: auto;
-}
-
-#page-heading {
-    border-bottom: 2px solid black;
-    padding-bottom: 4px;
-    position: relative;
-    width: 100%;
-}
-
-span.menu-bar {
-    position: absolute;
-    display: block;
-    bottom: 3px;
-    right: 0;
-    color: gray;
-    font-size: 0.5em;
-    text-align: right;
-}
-
 textarea {
     font-family: "Courier New", Courier, monospace;
     font-size: inherit;
@@ -96,6 +73,7 @@ textarea {
 }
 
 #footer {
+    clear: both;
     margin-top: 10px;
     text-align:center;
 }
