@@ -8,4 +8,3 @@ To see this code in action, visit [wiki.pageforest.com].
   [Markdown]: http://daringfireball.net/projects/markdown/
   [Showdown]: http://attacklab.net/showdown/showdown-v0.9.zip
   [wiki.pageforest.com]: http://wiki.pageforest.com
-  
