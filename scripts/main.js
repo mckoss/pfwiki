@@ -17,6 +17,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
         if (newText == lastMarkdown) {
             return;
         }
+	client.setDirty();
         lastMarkdown = newText;
         try {
             page.section.innerHTML = markdown.makeHtml(newText);
@@ -45,6 +46,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     function onReady() {
         page = dom.bindIDs();
         client = new namespace.com.pageforest.client.Client(ns);
+	client.saveInterval = 0;
 
         client.addAppBar();
 
