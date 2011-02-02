@@ -17,18 +17,18 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
         if (newText == lastMarkdown) {
             return;
         }
-	client.setDirty();
+        client.setDirty();
         lastMarkdown = newText;
         try {
-            page.section.innerHTML = markdown.makeHtml(newText);
-            nsdoc.updateScriptSections(page.section);
+            page.output.innerHTML = markdown.makeHtml(newText);
+            nsdoc.updateScriptSections(page.output);
         } catch (e) {}
     }
 
     function toggleEditor(evt) {
         editVisible = !editVisible;
         if (editVisible) {
-            $(page.editBlock).show();
+            $(page.inputBlock).show();
             // Binding this in the onReady function does not work
             // since the original textarea is hidden.
             if (!editorInitialized) {
@@ -38,7 +38,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
                     .autoResize({limit: (screen.height - 100) / 2});
             }
         } else {
-            $(page.editBlock).hide();
+            $(page.inputBlock).hide();
         }
         $(page.edit).val(editVisible ? 'hide' : 'edit');
     }
@@ -46,7 +46,7 @@ namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
     function onReady() {
         page = dom.bindIDs();
         client = new namespace.com.pageforest.client.Client(ns);
-	client.saveInterval = 0;
+        client.saveInterval = 0;
 
         client.addAppBar();
 

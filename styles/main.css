@@ -16,7 +16,7 @@ p {
     line-height: 140%;
 }
 
-#section pre {
+#output pre {
     border: 2px solid gray;
     display: block;
     background-color: #F5F5DC;
@@ -44,13 +44,13 @@ li {
     margin-bottom: 8px;
 }
 
-#section table {
+#output table {
     border-collapse: collapse;
     border: 1px solid #36362E;
     margin: 0 0 8px 0;
 }
 
-#section th {
+#output th {
     border: 1px solid #36362E;
     padding: 5px;
     text-style: bold;
@@ -59,18 +59,18 @@ li {
     text-align: center;
 }
 
-#section td {
+#output td {
     border: 1px solid #36362E;
     padding: 5px;
     background-color: #F5F5DC;
 }
 
-div.page {
+#page {
     width: 900px;
     margin: auto;
 }
 
-.page-heading {
+#page-heading {
     border-bottom: 2px solid black;
     padding-bottom: 4px;
     position: relative;
@@ -87,7 +87,7 @@ span.menu-bar {
     text-align: right;
 }
 
-#editBlock {
+#inputBlock {
     display: none;
 }
 
@@ -97,7 +97,7 @@ textarea {
     width: 100%;
 }
 
-.footer {
+#footer {
     margin-top: 10px;
     text-align:center;
 }

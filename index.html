@@ -23,22 +23,23 @@
 </head>
 
 <body>
-  <div class="page">
-    <h1 class="page-heading">
+  <div id="page">
+    <h1 id="page-heading">
       <span id="title">New Wiki</span>
       <span class="menu-bar">
         <input type="button" id="edit" value="Edit"/>
       </span>
     </h1>
 
-    <div id='editBlock'>
+    <div class="if_edit" id="inputBlock">
       <textarea id="editor"></textarea>
-      <h3>Preview:</h3>
-      <hr/>
     </div>
-    <div id="section"></div>
 
-    <div class="footer">
+    <div id="outputBlock">
+      <div id="output"></div>
+    </div>
+
+    <div id="footer">
       <hr/>
       <a target="_blank" href="#">Start a New Wiki</a> |
       <a target="_blank" href="http://daringfireball.net/projects/markdown/syntax">Markdown Help</a> |
