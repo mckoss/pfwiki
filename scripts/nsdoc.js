@@ -7,6 +7,7 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
     var base = namespace.lookup('org.startpad.base');
     var format = namespace.lookup('org.startpad.format');
     var reArgs = /^function\s+\S*\(([^\)]*)\)/;
+    var reFuncName = /^function\s+(\S+)\s*\(/;
     var reComma = /\s*,\s/;
 
     function functionDoc(name, func) {
@@ -41,6 +42,17 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
         return s.toString();
     }
 
+    function getFunctionName(func) {
+        if (typeof func != 'function') {
+            return "notAFunction";
+        }
+        var result = reFuncName(func.toString());
+        if (result == null) {
+            return "anonymous";
+        }
+        return result[1];
+    }
+
     function namespaceDoc(ns) {
         var s = new base.StBuf();
 
@@ -63,6 +75,8 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
 
        <script class="eval-lines"> can be used to eval each line and
        append a comment with the returned value.
+
+       REVIEW: Injecting script into DOM executes on Firefox?  Need to disable.
     */
     function updateScriptSections(context) {
         var scripts = $('script', context);
@@ -76,20 +90,24 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
         function replaceKeys(st) {
             var args = arguments;
             st = st.toString();
-            re = /{([^}]+)}/g;
+            var re = /\{([^}]+)\}/g;
             st = st.replace(re, function(whole, key) {
-               var n = parseInt(key);
-               if (!isNaN(n)) {
-                   return args[n];
-               } else {
-                   return args[1][key];
-               }
+                var n = parseInt(key);
+                if (!isNaN(n)) {
+                    return args[n];
+                } else {
+                    return args[1][key];
+                }
             });
             return st;
         }
 
         function print() {
             var s = replaceKeys.apply(undefined, arguments);
+            while (s.length > 80) {
+                printed.push(s.slice(0, 80));
+                s = s.slice(80);
+            }
             printed.push(s);
         }
 
@@ -104,8 +122,8 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
             for (var j = 0; j < lines.length; j++) {
                 if (j != lines.length - 1 &&
                     !/^\S.*;\s*$/.test(lines[j])) {
-                     comments[j] = '';
-                     continue;
+                    comments[j] = '';
+                    continue;
                 }
                 var batch = lines.slice(jBegin, j + 1).join('\n');
                 batch = base.strip(batch);
@@ -116,6 +134,10 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
                     } else {
                         if (typeof value == 'string') {
                             value = '"' + value + '"';
+                            value.replace(/"/g, '""');
+                        }
+                        if (typeof value == 'function') {
+                            value = "function " + getFunctionName(value);
                         }
                         comments[j] = '// ' + value.toString();
                     }
@@ -132,9 +154,11 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
                 }
             }
             body = lines.join('\n');
-            $(script).before('<pre><code>' + body + '</code></pre>');
+            $(script).before('<pre><code>' + format.escapeHTML(body) + '</code></pre>');
             if (printed.length > 0) {
-                $(script).after('<pre class="printed"><code>' + printed.join('\n') + '</code></pre>');
+                $(script).after('<pre class="printed"><code>' +
+                                format.escapeHTML(printed.join('\n')) +
+                                '</code></pre>');
             }
         }
     }

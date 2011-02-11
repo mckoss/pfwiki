@@ -36,13 +36,14 @@ span.menu-bar {
 }
 
 #inputBlock { width: 48%; float: right; }
-#page.edit #outputBlock { width: 48%; float: left; margin: 0; overflow: hidden}
+#page.edit #outputBlock { width: 48%; float: left; margin: 0; }
 
 #output pre {
     border: 2px solid gray;
     display: block;
     background-color: #F5F5DC;
     padding: 5px 10px;
+    overflow: hidden;
 }
 
 #output pre.printed {
