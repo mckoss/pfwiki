@@ -139,6 +139,18 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
                         if (typeof value == 'function') {
                             value = "function " + getFunctionName(value);
                         }
+                        if (typeof value == 'object') {
+                            if (value === null) {
+                                value = "null";
+                            } else {
+                                var prefix = getFunctionName(value.constructor) + ': ';
+                                try {
+                                    value = prefix + JSON.stringify(value);
+                                } catch (e3) {
+                                    value += prefix + "{...}";
+                                }
+                            }
+                        }
                         comments[j] = '// ' + value.toString();
                     }
                 } catch (e2) {
