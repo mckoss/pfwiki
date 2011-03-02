@@ -7,7 +7,7 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
     var base = namespace.lookup('org.startpad.base');
     var format = namespace.lookup('org.startpad.format');
     var reArgs = /^function\s+\S*\(([^\)]*)\)/;
-    var reFuncName = /^function\s+(\S+)\s*\(/;
+    var reFuncName = /function\s+(\S+)\s*\(/;
     var reComma = /\s*,\s/;
 
     function functionDoc(name, func) {
@@ -46,7 +46,7 @@ namespace.lookup('org.startpad.nsdoc').defineOnce(function(ns)
         if (typeof func != 'function') {
             return "notAFunction";
         }
-        var result = reFuncName(func.toString());
+        var result = reFuncName.exec(func.toString());
         if (result == null) {
             return "anonymous";
         }
