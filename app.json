@@ -8,15 +8,16 @@
   "icon": "images/icon.png",
   "modified": {
     "__class__": "Date",
-    "isoformat": "2011-01-15T21:25:14.435399Z"
+    "isoformat": "2011-02-27T18:23:33.945761Z"
   },
   "owner": "mckoss",
   "readers": [
     "public"
   ],
   "referers": [],
-  "sha1": "7d343a22f5e767456686495c21f7dac77928c43b",
-  "size": 257,
+  "secureData": false,
+  "sha1": "8da87cde37448584f883c9b9eea6752119936b53",
+  "size": 254,
   "tags": [
     "demo",
     "sample"
