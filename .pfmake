@@ -1,0 +1,11 @@
+{
+  "files": {
+    "scripts/combined.js": [
+      "scripts/autoresize.jquery.js",
+      "scripts/showdown.js",
+      "scripts/main.js",
+      "scripts/nsdoc.js"
+    ]
+  },
+  "uploadIndividualFiles": false
+}
