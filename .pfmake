@@ -1,11 +1,13 @@
 {
   "files": {
-    "scripts/combined.js": [
-      "scripts/autoresize.jquery.js",
-      "scripts/showdown.js",
-      "scripts/main.js",
-      "scripts/nsdoc.js"
-    ]
+      "scripts/wiki-all.js": [
+          "scripts/namespace-plus.js",
+          "scripts/autoresize.jquery.js",
+          "scripts/showdown.js",
+          { "path": "scripts/main.js", "namespace": "com.pageforest.wiki" },
+          "scripts/nsdoc.js"
+      ]
   },
+  "minify": false,
   "uploadIndividualFiles": false
 }

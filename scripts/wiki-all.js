@@ -1,3 +1,365 @@
+/* Source: scripts/namespace-plus.js */
+/* Namespace.js - modular namespaces in JavaScript
+
+   by Mike Koss - placed in the public domain
+*/
+
+(function(global) {
+    var globalNamespace = global['namespace'];
+    var VERSION = '3.0.1';
+
+    function Module() {}
+
+    function numeric(s) {
+        if (!s) {
+            return 0;
+        }
+        var a = s.split('.');
+        return 10000 * parseInt(a[0]) + 100 * parseInt(a[1]) + parseInt(a[2]);
+    }
+
+    if (globalNamespace) {
+        if (numeric(VERSION) <= numeric(globalNamespace['VERSION'])) {
+            return;
+        }
+        Module = globalNamespace.constructor;
+    } else {
+        global['namespace'] = globalNamespace = new Module();
+    }
+    globalNamespace['VERSION'] = VERSION;
+
+    function require(path) {
+        path = path.replace(/-/g, '_');
+        var parts = path.split('.');
+        var ns = globalNamespace;
+        for (var i = 0; i < parts.length; i++) {
+            if (ns[parts[i]] === undefined) {
+                ns[parts[i]] = new Module();
+            }
+            ns = ns[parts[i]];
+        }
+        return ns;
+    }
+
+    var proto = Module.prototype;
+
+    proto['module'] = function(path, closure) {
+        var exports = require(path);
+        if (closure) {
+            closure(exports, require);
+        }
+        return exports;
+    };
+
+    proto['extend'] = function(exports) {
+        for (var sym in exports) {
+            if (exports.hasOwnProperty(sym)) {
+                this[sym] = exports[sym];
+            }
+        }
+    };
+}(this));
+namespace.module('org.startpad.types', function (exports, require) {
+    exports.extend({
+        'VERSION': '0.1.0',
+        'isArguments': function (value) { return isType(value, 'arguments'); },
+        'isArray': function (value) { return isType(value, 'array'); },
+        'copyArray': copyArray,
+        'isType': isType,
+        'typeOf': typeOf,
+        'extend': extend,
+        'project': project,
+        'getFunctionName': getFunctionName
+    });
+
+    // Can be used to copy Arrays and Arguments into an Array
+    function copyArray(arg) {
+        return Array.prototype.slice.call(arg);
+    }
+
+    var baseTypes = ['number', 'string', 'boolean', 'array', 'function', 'date',
+                     'regexp', 'arguments', 'undefined', 'null'];
+
+    function internalType(value) {
+        return Object.prototype.toString.call(value).match(/\[object (.*)\]/)[1].toLowerCase();
+    }
+
+    function isType(value, type) {
+        return typeOf(value) == type;
+    }
+
+    // Return one of the baseTypes as a string
+    function typeOf(value) {
+        if (value === undefined) {
+            return 'undefined';
+        }
+        if (value === null) {
+            return 'null';
+        }
+        var type = internalType(value);
+        if (baseTypes.indexOf(type) == -1) {
+            type = typeof(value);
+        }
+        return type;
+    }
+
+    // IE 8 has bug that does not enumerates even own properties that have
+    // these internal names.
+    var enumBug = !{toString: true}.propertyIsEnumerable('toString');
+    var internalNames = ['toString', 'toLocaleString', 'valueOf',
+                         'constructor', 'isPrototypeOf'];
+
+    // Copy the (own) properties of all the arguments into the first one (in order).
+    function extend(dest) {
+        var i, j;
+        var source;
+        var prop;
+
+        if (dest === undefined) {
+            dest = {};
+        }
+        for (i = 1; i < arguments.length; i++) {
+            source = arguments[i];
+            for (prop in source) {
+                if (source.hasOwnProperty(prop)) {
+                    dest[prop] = source[prop];
+                }
+            }
+            if (!enumBug) {
+                continue;
+            }
+            for (j = 0; j < internalNames.length; j++) {
+                prop = internalNames[j];
+                if (source.hasOwnProperty(prop)) {
+                    dest[prop] = source[prop];
+                }
+            }
+        }
+        return dest;
+    }
+
+    // Return new object with just the listed properties "projected"
+    // into the new object.  Ignore undefined properties.
+    function project(obj, props) {
+        var result = {};
+        for (var i = 0; i < props.length; i++) {
+            var name = props[i];
+            if (obj && obj.hasOwnProperty(name)) {
+                result[name] = obj[name];
+            }
+        }
+        return result;
+    }
+
+    function getFunctionName(fn) {
+        if (typeof fn != 'function') {
+            return undefined;
+        }
+        var result = fn.toString().match(/function\s*(\S+)\s*\(/);
+        if (!result) {
+            return '';
+        }
+        return result[1];
+    }
+
+});
+namespace.module('org.startpad.funcs', function (exports, require) {
+    var types = require('org.startpad.types');
+
+    exports.extend({
+        'VERSION': '0.2.1',
+        'methods': methods,
+        'bind': bind,
+        'decorate': decorate,
+        'shadow': shadow,
+        'subclass': subclass,
+        'numericVersion': numericVersion,
+        'monkeyPatch': monkeyPatch,
+        'patch': patch
+    });
+
+    // Convert 3-part version number to comparable integer.
+    // Note: No part should be > 99.
+    function numericVersion(s) {
+        if (!s) {
+            return 0;
+        }
+        var a = s.split('.');
+        return 10000 * parseInt(a[0]) + 100 * parseInt(a[1]) + parseInt(a[2]);
+    }
+
+    // Monkey patch additional methods to constructor prototype, but only
+    // if patch version is newer than current patch version.
+    function monkeyPatch(ctor, by, version, patchMethods) {
+        if (ctor._patches) {
+            var patchVersion = ctor._patches[by];
+            if (numericVersion(patchVersion) >= numericVersion(version)) {
+                return;
+            }
+        }
+        ctor._patches = ctor._patches || {};
+        ctor._patches[by] = version;
+        methods(ctor, patchMethods);
+    }
+
+    function patch() {
+        monkeyPatch(Function, 'org.startpad.funcs', exports.VERSION, {
+            'methods': function (obj) { methods(this, obj); },
+            'curry': function () {
+                var args = [this, undefined].concat(types.copyArray(arguments));
+                return bind.apply(undefined, args);
+             },
+            'curryThis': function (self) {
+                var args = types.copyArray(arguments);
+                args.unshift(this);
+                return bind.apply(undefined, args);
+             },
+            'decorate': function (decorator) {
+                return decorate(this, decorator);
+            },
+            'subclass': function(parent, extraMethods) {
+                return subclass(this, parent, extraMethods);
+            }
+        });
+        return exports;
+    }
+
+    // Copy methods to a Constructor Function's prototype
+    function methods(ctor, obj) {
+        types.extend(ctor.prototype, obj);
+    }
+
+    // Bind 'this' and/or arguments and return new function.
+    // Differs from native bind (if present) in that undefined
+    // parameters are merged.
+    function bind(fn, self) {
+        var presets;
+
+        // Handle the monkey-patched and in-line forms of curry
+        if (arguments.length == 3 && types.isArguments(arguments[2])) {
+            presets = Array.prototype.slice.call(arguments[2], self1);
+        } else {
+            presets = Array.prototype.slice.call(arguments, 2);
+        }
+
+        function merge(a1, a2) {
+            var merged = types.copyArray(a1);
+            a2 = types.copyArray(a2);
+            for (var i = 0; i < merged.length; i++) {
+                if (merged[i] === undefined) {
+                    merged[i] = a2.shift();
+                }
+            }
+            return merged.concat(a2);
+        }
+
+        return function curried() {
+            return fn.apply(self || this, merge(presets, arguments));
+        };
+    }
+
+    // Wrap the fn function with a generic decorator like:
+    //
+    // function decorator(fn, arguments, wrapper) {
+    //   if (fn == undefined) { ... init ...; return;}
+    //   ...
+    //   result = fn.apply(this, arguments);
+    //   ...
+    //   return result;
+    // }
+    //
+    // The decorated function is created for each call
+    // of the decorate function.  In addition to wrapping
+    // the decorated function, it can be used to save state
+    // information between calls by adding properties to it.
+    function decorate(fn, decorator) {
+        function decorated() {
+            return decorator.call(this, fn, arguments, decorated);
+        }
+        // Init call - pass undefined fn - but available in this
+        // if needed.
+        decorator.call(fn, undefined, arguments, decorated);
+        return decorated;
+    }
+
+    // Create an empty object whose __proto__ points to the given object.
+    // It's properties will "shadow" those of the given object until modified.
+    function shadow(obj) {
+        function Dummy() {}
+        Dummy.prototype = obj;
+        return new Dummy();
+    }
+
+    // Classical JavaScript inheritance pattern.
+    function subclass(ctor, parent, extraMethods) {
+        ctor.prototype = shadow(parent.prototype);
+        ctor.prototype.constructor = ctor;
+        ctor.prototype._super = parent;
+        ctor.prototype._proto = parent.prototype;
+        methods(ctor, extraMethods);
+    }
+
+});
+namespace.module('org.startpad.string', function (exports, require) {
+  var funcs = require('org.startpad.funcs');
+
+  exports.extend({
+    'VERSION': '0.1.2',
+    'patch': patch,
+    'format': format
+  });
+
+  function patch() {
+      funcs.monkeyPatch(String, 'org.startpad.string', exports.VERSION, {
+          'format': function formatFunction () {
+              if (arguments.length == 1 && typeof arguments[0] == 'object') {
+                  return format(this, arguments[0]);
+              } else {
+                  return format(this, arguments);
+              }
+            }
+      });
+      return exports;
+  }
+
+  var reFormat = /\{\s*([^} ]+)\s*\}/g;
+
+  // Format a string using values from a dictionary or array.
+  // {n} - positional arg (0 based)
+  // {key} - object property (first match)
+  // .. same as {0.key}
+  // {key1.key2.key3} - nested properties of an object
+  // keys can be numbers (0-based index into an array) or
+  // property names.
+  function format(st, args, re) {
+      re = re || reFormat;
+      if (st == undefined) {
+          return "undefined";
+      }
+      st = st.toString();
+      st = st.replace(re, function(whole, key) {
+          var value = args;
+          var keys = key.split('.');
+          for (var i = 0; i < keys.length; i++) {
+              key = keys[i];
+              var n = parseInt(key);
+              if (!isNaN(n)) {
+                  value = value[n];
+              } else {
+                  value = value[key];
+              }
+              if (value == undefined) {
+                  return "";
+              }
+          }
+          // Implicit toString() on this.
+          return value;
+      });
+      return st;
+  }
+
+});
+/* Source: scripts/autoresize.jquery.js */
 /*
  * jQuery autoResize (textarea auto-resizer)
  * @copyright James Padolsey http://james.padolsey.com
@@ -95,7 +457,9 @@
 
 
 
-})(jQuery);//
+})(jQuery);
+/* Source: scripts/showdown.js */
+//
 // showdown.js -- A javascript port of Markdown.
 //
 // Copyright (c) 2007 John Fraser.
@@ -288,7 +652,7 @@ var _StripLinkDefinitions = function(text) {
 			} else if (m4) {
 				g_titles[m1] = m4.replace(/"/g,"&quot;");
 			}
-			
+
 			// Completely remove the definition from the text
 			return "";
 		}
@@ -361,7 +725,7 @@ var _HashHTMLBlocks = function(text) {
 	text = text.replace(/^(<(p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math)\b[^\r]*?.*<\/\2>[ \t]*(?=\n+)\n)/gm,hashElement);
 
 	// Special case just for <hr />. It was easier to make a special case than
-	// to make the other regex more complicated.  
+	// to make the other regex more complicated.
 
 	/*
 		text = text.replace(/
@@ -370,7 +734,7 @@ var _HashHTMLBlocks = function(text) {
 			[ ]{0,3}
 			(<(hr)				// start tag = $2
 			\b					// word break
-			([^<>])*?			// 
+			([^<>])*?			//
 			\/?>)				// the matching end tag
 			[ \t]*
 			(?=\n{2,})			// followed by a blank line
@@ -428,13 +792,13 @@ var hashElement = function(wholeMatch,m1) {
 	// Undo double lines
 	blockText = blockText.replace(/\n\n/g,"\n");
 	blockText = blockText.replace(/^\n/,"");
-	
+
 	// strip trailing blank lines
 	blockText = blockText.replace(/\n+$/g,"");
-	
+
 	// Replace the element text with a marker ("~KxK" where x is its key)
 	blockText = "\n\n~K" + (g_html_blocks.push(blockText)-1) + "K\n\n";
-	
+
 	return blockText;
 };
 
@@ -500,7 +864,7 @@ var _EscapeSpecialCharsWithinTagAttributes = function(text) {
 // don't conflict with their use in Markdown for code, italics and strong.
 //
 
-	// Build a regex to find HTML tags and comments.  See Friedl's 
+	// Build a regex to find HTML tags and comments.  See Friedl's
 	// "Mastering Regular Expressions", 2nd Ed., pp. 200-201.
 	var regex = /(<[a-z\/!$]("[^"]*"|'[^']*'|[^'">])*>|<!(--.*?--\s*)+>)/gi;
 
@@ -605,14 +969,14 @@ var writeAnchorTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
 	var link_id	 = m3.toLowerCase();
 	var url		= m4;
 	var title	= m7;
-	
+
 	if (url == "") {
 		if (link_id == "") {
 			// lower-case and turn embedded newlines into spaces
 			link_id = link_text.toLowerCase().replace(/ ?\n/g," ");
 		}
 		url = "#"+link_id;
-		
+
 		if (g_urls[link_id] != undefined) {
 			url = g_urls[link_id];
 			if (g_titles[link_id] != undefined) {
@@ -627,19 +991,19 @@ var writeAnchorTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
 				return whole_match;
 			}
 		}
-	}	
-	
+	}
+
 	url = escapeCharacters(url,"*_");
 	var result = "<a href=\"" + url + "\"";
-	
+
 	if (title != "") {
 		title = title.replace(/"/g,"&quot;");
 		title = escapeCharacters(title,"*_");
 		result +=  " title=\"" + title + "\"";
 	}
-	
+
 	result += ">" + link_text + "</a>";
-	
+
 	return result;
 }
 
@@ -710,14 +1074,14 @@ var writeImageTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
 	var title	= m7;
 
 	if (!title) title = "";
-	
+
 	if (url == "") {
 		if (link_id == "") {
 			// lower-case and turn embedded newlines into spaces
 			link_id = alt_text.toLowerCase().replace(/ ?\n/g," ");
 		}
 		url = "#"+link_id;
-		
+
 		if (g_urls[link_id] != undefined) {
 			url = g_urls[link_id];
 			if (g_titles[link_id] != undefined) {
@@ -727,8 +1091,8 @@ var writeImageTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
 		else {
 			return whole_match;
 		}
-	}	
-	
+	}
+
 	alt_text = alt_text.replace(/"/g,"&quot;");
 	url = escapeCharacters(url,"*_");
 	var result = "<img src=\"" + url + "\" alt=\"" + alt_text + "\"";
@@ -741,9 +1105,9 @@ var writeImageTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
 		title = escapeCharacters(title,"*_");
 		result +=  " title=\"" + title + "\"";
 	//}
-	
+
 	result += " />";
-	
+
 	return result;
 }
 
@@ -753,7 +1117,7 @@ var _DoHeaders = function(text) {
 	// Setext-style headers:
 	//	Header 1
 	//	========
-	//  
+	//
 	//	Header 2
 	//	--------
 	//
@@ -837,7 +1201,7 @@ var _DoLists = function(text) {
 			// paragraph for the last item in a list, if necessary:
 			list = list.replace(/\n{2,}/g,"\n\n\n");;
 			var result = _ProcessListItems(list);
-	
+
 			// Trim any trailing whitespace, to put the closing `</$list_type>`
 			// up on the preceding line, to get it past the current stupid
 			// HTML block parser. This is a hack to work around the terrible
@@ -857,7 +1221,7 @@ var _DoLists = function(text) {
 			// paragraph for the last item in a list, if necessary:
 			var list = list.replace(/\n{2,}/g,"\n\n\n");;
 			var result = _ProcessListItems(list);
-			result = runup + "<"+list_type+">\n" + result + "</"+list_type+">\n";	
+			result = runup + "<"+list_type+">\n" + result + "</"+list_type+">\n";
 			return result;
 		});
 	}
@@ -943,7 +1307,7 @@ _ProcessListItems = function(list_str) {
 var _DoCodeBlocks = function(text) {
 //
 //  Process Markdown `<pre><code>` blocks.
-//  
+//
 
 	/*
 		text = text.replace(text,
@@ -960,12 +1324,12 @@ var _DoCodeBlocks = function(text) {
 
 	// attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
 	text += "~0";
-	
+
 	text = text.replace(/(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=~0))/g,
 		function(wholeMatch,m1,m2) {
 			var codeblock = m1;
 			var nextChar = m2;
-		
+
 			codeblock = _EncodeCode( _Outdent(codeblock));
 			codeblock = _Detab(codeblock);
 			codeblock = codeblock.replace(/^\n+/g,""); // trim leading newlines
@@ -992,26 +1356,26 @@ var hashBlock = function(text) {
 var _DoCodeSpans = function(text) {
 //
 //   *  Backtick quotes are used for <code></code> spans.
-// 
+//
 //   *  You can use multiple backticks as the delimiters if you want to
 //	 include literal backticks in the code span. So, this input:
-//	 
+//
 //		 Just type ``foo `bar` baz`` at the prompt.
-//	 
+//
 //	   Will translate to:
-//	 
+//
 //		 <p>Just type <code>foo `bar` baz</code> at the prompt.</p>
-//	 
+//
 //	There's no arbitrary limit to the number of backticks you
 //	can use as delimters. If you need three consecutive backticks
 //	in your code, use four for delimiters, etc.
 //
 //  *  You can use spaces to get literal backticks at the edges:
-//	 
+//
 //		 ... type `` `bar` `` ...
-//	 
+//
 //	   Turns to:
-//	 
+//
 //		 ... type <code>`bar`</code> ...
 //
 
@@ -1114,7 +1478,7 @@ var _DoBlockQuotes = function(text) {
 
 			bq = bq.replace(/^[ \t]+$/gm,"");		// trim whitespace-only lines
 			bq = _RunBlockGamut(bq);				// recurse
-			
+
 			bq = bq.replace(/(^|\n)/g,"$1  ");
 			// These leading spaces screw with <pre> content, so we need to fix that:
 			bq = bq.replace(
@@ -1126,7 +1490,7 @@ var _DoBlockQuotes = function(text) {
 					pre = pre.replace(/~0/g,"");
 					return pre;
 				});
-			
+
 			return hashBlock("<blockquote>\n" + bq + "\n</blockquote>");
 		});
 	return text;
@@ -1185,14 +1549,14 @@ var _FormParagraphs = function(text) {
 
 var _EncodeAmpsAndAngles = function(text) {
 // Smart processing for ampersands and angle brackets that need to be encoded.
-	
+
 	// Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
 	//   http://bumppo.net/projects/amputator/
 	text = text.replace(/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/g,"&amp;");
-	
+
 	// Encode naked <'s
 	text = text.replace(/<(?![a-z\/?\$!])/gi,"&lt;");
-	
+
 	return text;
 }
 
@@ -1390,95 +1754,116 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 	return "~E"+charCodeToEscape+"E";
 }
 
-} // end of Showdown.converter// Wiki - A simple wiki base on Pageforest.
-/*globals Showdown */
-namespace.lookup('com.pageforest.wiki').defineOnce(function(ns) {
-    var dom = namespace.lookup('org.startpad.dom');
-    var nsdoc = namespace.lookup('org.startpad.nsdoc');
-    var client;
-    var markdown = new Showdown.converter();
+} // end of Showdown.converter
+/* Source: scripts/main.js */
+namespace.module('com.pageforest.wiki', function (exports, require) {
+var clientLib = require('com.pageforest.client');
+var dom = require('org.startpad.dom');
+var nsdoc = require('org.startpad.nsdoc');
+var markdown = new Showdown.converter();
 
-    var doc;                            // Bound elements here
-    var lastMarkdown = "";
-    var syncTime = 5;
-    var editVisible = false;
-    var editorInitialized = false;
-
-    function onEditChange() {
-        var newText = doc.editor.value;
-        if (newText == lastMarkdown) {
-            return;
-        }
-        client.setDirty();
-        lastMarkdown = newText;
-        try {
-            doc.output.innerHTML = markdown.makeHtml(newText);
-            nsdoc.updateScriptSections(doc.output);
-        } catch (e) {}
-    }
-
-    function toggleEditor(evt) {
-        editVisible = !editVisible;
-        if (editVisible) {
-            $(doc.page).addClass('edit');
-            // Binding this in the onReady function does not work
-            // since the original textarea is hidden.
-            if (!editorInitialized) {
-                editorInitialized = true;
-                $(doc.editor)
-                    .bind('keyup', onEditChange)
-                    .autoResize({limit: 10000});
-            }
-        } else {
-            $(doc.page).removeClass('edit');
-        }
-        $(doc.edit).val(editVisible ? 'hide' : 'edit');
-    }
-
-    function onReady() {
-        doc = dom.bindIDs();
-        client = new namespace.com.pageforest.client.Client(ns);
-        client.saveInterval = 0;
-
-        client.addAppBar();
-
-        $(doc.edit).click(toggleEditor);
-
-        setInterval(onEditChange, syncTime * 1000);
-    }
-
-    function updateMeta(json) {
-        document.title = json.title;
-        $('#title').text(json.title);
-    }
-
-    function onSaveSuccess(json) {
-        updateMeta(client.meta);
-    }
-
-    function setDoc(json) {
-        doc.editor.value = json.blob.markdown;
-        onEditChange();
-        updateMeta(json);
-    }
-
-    function getDoc() {
-        return {
-            blob: {
-                version: 1,
-                markdown: doc.editor.value
-            },
-            readers: ['public']
-        };
-    }
-
-    ns.extend({
-        'onReady': onReady,
-        'getDoc': getDoc,
-        'setDoc': setDoc,
-        'onSaveSuccess': onSaveSuccess
-    });
+exports.extend({
+    'onReady': onReady,
+    'getDoc': getDoc,
+    'setDoc': setDoc,
+    'onSaveSuccess': onSaveSuccess
 });
+
+var client;
+var doc;                            // Bound elements here
+var blob;
+var lastText = "";
+var syncTime = 5;
+var editVisible = false;
+var editorInitialized = false;
+
+function onEditChange() {
+    var newText = doc.editor.value;
+    if (newText == lastText) {
+        return;
+    }
+    client.setDirty();
+    lastText = newText;
+    try {
+        doc.output.innerHTML = markdown.makeHtml(newText);
+        nsdoc.updateScriptSections(doc.output);
+    } catch (e) {
+        $(doc.output).text("Error: " + e.message);
+    }
+}
+
+function toggleEditor(evt) {
+    editVisible = !editVisible;
+    if (editVisible) {
+        $(doc.page).addClass('edit');
+        // Binding this in the onReady function does not work
+        // since the original textarea is hidden.
+        if (!editorInitialized) {
+            editorInitialized = true;
+            $(doc.editor)
+                .bind('keyup', onEditChange)
+                .autoResize({limit: 10000});
+        }
+    } else {
+        $(doc.page).removeClass('edit');
+    }
+    $(doc.edit).val(editVisible ? 'hide' : 'edit');
+}
+
+function onReady() {
+    handleAppCache();
+    doc = dom.bindIDs();
+    client = new clientLib.Client(exports);
+    client.saveInterval = 0;
+
+    client.addAppBar();
+
+    $(doc.edit).click(toggleEditor);
+
+    setInterval(onEditChange, syncTime * 1000);
+}
+
+function updateMeta(json) {
+    document.title = json.title;
+    $('#title').text(json.title);
+}
+
+function onSaveSuccess(json) {
+    updateMeta(client.meta);
+}
+
+function setDoc(json) {
+    doc.editor.value = json.blob.markdown;
+    onEditChange();
+    updateMeta(json);
+}
+
+function getDoc() {
+    return {
+        blob: {
+            version: 1,
+            markdown: doc.editor.value
+        },
+        readers: ['public']
+    };
+}
+
+// For offline - capable applications
+function handleAppCache() {
+    if (typeof applicationCache == 'undefined') {
+        return;
+    }
+
+    if (applicationCache.status == applicationCache.UPDATEREADY) {
+        applicationCache.swapCache();
+        location.reload();
+        return;
+    }
+
+    applicationCache.addEventListener('updateready', handleAppCache, false);
+}
+});
+/* Source: scripts/nsdoc.js */
 /*
  Create documentation from a JavaScript namespace.
  */
