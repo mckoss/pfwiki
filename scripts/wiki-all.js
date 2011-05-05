@@ -1863,6 +1863,7 @@ function handleAppCache() {
     applicationCache.addEventListener('updateready', handleAppCache, false);
 }
 });
+
 /* Source: scripts/nsdoc.js */
 /*
  Create documentation from a JavaScript namespace.
