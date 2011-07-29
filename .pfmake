@@ -5,7 +5,7 @@
           "scripts/autoresize.jquery.js",
           "scripts/showdown.js",
           { "path": "scripts/main.js", "namespace": "com.pageforest.wiki" },
-          "scripts/nsdoc.js"
+          { "path": "scripts/nsdoc.js", "namespace": "org.startpad.nsdoc" }
       ]
   },
   "minify": false,
