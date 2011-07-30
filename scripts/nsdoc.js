@@ -83,87 +83,120 @@ function namespaceDoc(ns) {
    REVIEW: Injecting script into DOM executes on Firefox?  Need to disable.
 */
 function updateScriptSections(context) {
-    var scripts = $('script', context);
-    var e;
-    var printed;
+    var domScripts = $('script', context);
+    var scripts = [];
+    var i, j;
+    var script;
 
-    console.log("updateScriptSections");
+    for (i = 0; i < domScripts.length; i++) {
+        if (domScripts[i].className != '') {
+            continue;
+        }
+        script = {script: domScripts[i],
+                  fragments: [],
+                  values: [],
+                  lines: base.strip(domScripts[i].innerHTML).split('\n'),
+                  max: 0
+                 };
+        scripts.push(script);
+        var jBegin = 0;
+        for (j = 0; j < script.lines.length; j++) {
+            if (j != script.lines.length - 1 &&
+                !/^\S.*;\s*$/.test(script.lines[j])) {
+                continue;
+            }
+            script.fragments[j] = base.strip(script.lines.slice(jBegin, j + 1).join('\n'));
+            script.max = Math.max(script.lines[j].length, script.max);
+            jBegin = j + 1;
+        }
+    }
+
+    evalScripts(scripts);
+
+    for (i = 0; i < scripts.length; i++) {
+        script = scripts[i];
+        for (j = 0; j < script.lines.length; j++) {
+            if (script.comments[j]) {
+                script.lines[j] += format.repeat(' ', script.max - script.lines[j].length + 2) +
+                    script.comments[j];
+            }
+        }
+        $(script.script).before('<pre><code>' +
+                                format.escapeHTML(script.lines.join('\n')) +
+                                '</code></pre>');
+        if (script.writes.length > 0) {
+            $(script.script).after('<pre class="printed"><code>' +
+                                   format.escapeHTML(script.writes.join('\n')) +
+                                   '</code></pre>');
+        }
+    }
+}
+
+// Evaluate all script fragments in one function so variables set will
+// carry over to subsequent fragments.  Avoid using common variable names
+// that might be used by eval'ed code.
+function evalScripts(_scripts) {
+    var _script;
+    var _value;
+    var _i, _line;
+
     function write() {
         var args = Array.prototype.slice.call(arguments, 1);
         var s = string.format(arguments[0], args);
         while (s.length > 80) {
-            printed.push(s.slice(0, 80));
+            _script.writes.push(s.slice(0, 80));
             s = s.slice(80);
         }
-        printed.push(s);
+        _script.writes.push(s);
     }
 
-    for (var i = 0; i < scripts.length; i++) {
-        var script = scripts[i];
-        if (script.className != '') {
-            continue;
-        }
-        printed = [];
-        var body = base.strip(script.innerHTML);
-        var lines = body.split('\n');
-        var comments = [];
-        var max = 0;
-        var jBegin = 0;
-        for (var j = 0; j < lines.length; j++) {
-            if (j != lines.length - 1 &&
-                !/^\S.*;\s*$/.test(lines[j])) {
-                comments[j] = '';
+    for (_i = 0; _i < _scripts.length; _i++) {
+        _script = _scripts[_i];
+
+        _script.writes = [];
+        _script.comments = [];
+        for (_line = 0; _line < _script.fragments.length; _line++) {
+            if (!_script.fragments[_line]) {
                 continue;
             }
-            var batch = lines.slice(jBegin, j + 1).join('\n');
-            batch = base.strip(batch);
             try {
-                console.log("eval: '" + batch + "'");
-                var value = evalExpression(batch, write);
-                if (value == undefined) {
-                    comments[j] = '';
-                } else {
-                    if (typeof value == 'string') {
-                        value = '"' + value + '"';
-                        value.replace(/"/g, '""');
-                    }
-                    if (typeof value == 'function') {
-                        value = "function " + getFunctionName(value);
-                    }
-                    if (typeof value == 'object') {
-                        if (value === null) {
-                            value = "null";
-                        } else {
-                            var prefix = getFunctionName(value.constructor) + ': ';
-                            try {
-                                value = prefix + JSON.stringify(value);
-                            } catch (e3) {
-                                value += prefix + "{...}";
-                            }
-                        }
-                    }
-                    comments[j] = '// ' + value.toString();
-                }
-            } catch (e2) {
-                comments[j] = "// Exception: " + e2.message;
+                _value = eval(_script.fragments[_line]);
+            } catch (_e) {
+                _value = _e;
             }
-            max = Math.max(lines[j].length, max);
-            jBegin = j + 1;
-        }
-
-        for (j = 0; j < lines.length; j++) {
-            if (comments[j] != "") {
-                lines[j] += format.repeat(' ', max - lines[j].length + 2) + comments[j];
-            }
-        }
-        body = lines.join('\n');
-        $(script).before('<pre><code>' + format.escapeHTML(body) + '</code></pre>');
-        if (printed.length > 0) {
-            $(script).after('<pre class="printed"><code>' +
-                            format.escapeHTML(printed.join('\n')) +
-                            '</code></pre>');
+            _script.comments[_line] = commentFromValue(_value);
         }
     }
+}
+
+function commentFromValue(value) {
+    if (value == undefined) {
+        return undefined;
+    }
+    if (value instanceof Error) {
+        return "// Exception: " + value.message;
+    }
+    switch (typeof value) {
+    case 'string':
+        value = '"' + value + '"';
+        value.replace(/"/g, '""');
+        break;
+    case 'function':
+        value = "function " + getFunctionName(value);
+        break;
+    case 'object':
+        if (value === null) {
+            value = "null";
+        } else {
+            var prefix = getFunctionName(value.constructor) + ': ';
+            try {
+                value = prefix + JSON.stringify(value);
+            } catch (e) {
+                value += prefix + "{...}";
+            }
+        }
+    }
+    return '// ' + value.toString();
 }
 
 var tester;
@@ -314,6 +347,3 @@ function trimCode(s) {
     return s + '\n';
 }
 
-function evalExpression(code, write) {
-    return eval(code);
-}
